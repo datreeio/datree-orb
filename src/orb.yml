@@ -17,9 +17,11 @@ jobs:
         type: string
       file_path:
         description: JSON formatted object including the expected an actual code component version. For more information view README file
+        default: ''
         type: string
       payload:
         description: JSON formatted object including the expected an actual code component version. For more information view README file
+        default: ''
         type: string
     steps:
       - checkout
