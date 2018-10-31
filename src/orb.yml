@@ -3,7 +3,7 @@ version: 2.1
 executors:
   default:
     docker: 
-      - image: circleci/node:7.10
+      - image: circleci/node:8
     shell: /bin/bash
 
 jobs:
@@ -15,15 +15,16 @@ jobs:
         description: Enter either your datree api key or use the CircleCI UI to add your token under the 'DATREE_API_KEY' env var
         default: $DATREE_API_KEY
         type: string
-      payload:
+      file_path:
         description: JSON formatted object including the expected an actual code component version. For more information view README file
         type: string
     steps:
+      - checkout
       - run: 
           name: datree version-compare policy
           command: |
             npm install @datreeio/version-compare && \
             node ./node_modules/@datreeio/version-compare/index \
             -a << parameters.API_KEY >> \
-            -p '<< parameters.payload >>' \
+            -f '<< parameters.file_path >>' \
             -u $CIRCLE_PULL_REQUEST
