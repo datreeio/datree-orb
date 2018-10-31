@@ -18,6 +18,9 @@ jobs:
       file_path:
         description: JSON formatted object including the expected an actual code component version. For more information view README file
         type: string
+      payload:
+        description: JSON formatted object including the expected an actual code component version. For more information view README file
+        type: string
     steps:
       - checkout
       - run: 
@@ -27,4 +30,5 @@ jobs:
             node ./node_modules/@datreeio/version-compare/index \
             -a << parameters.API_KEY >> \
             -f '<< parameters.file_path >>' \
+            -p '<< parameters.payload >>' \
             -u $CIRCLE_PULL_REQUEST
