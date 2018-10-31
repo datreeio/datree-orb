@@ -17,13 +17,40 @@ Developers would like to align and control versions of packages across different
 Example config:
 ```yaml
 orbs:
-  datree: datree/compare-versions@dev:0.0.1
+  datree: datree/compare-versions@dev:0.0.6
+
+jobs:
+  extract-versions:
+    docker:
+      - image: circleci/circleci-cli:0.1.2709
+    steps:
+      - run: echo "running version extraction script"
+      # this is a mock demo - running a script to extract the package versions that were installed during the build
 
 workflows:
   build_and_test:
     jobs:
-      - datree/run-version-compare
-
+      - extract-versions
+      - datree/compare-versions:
+          requires: 
+            - extract-versions
+          context: datree-api-key
+          payload: '{
+            "expected": [
+              {
+                "name":"webpack-node-externals",
+                "category":"npm","version":"1.7.2"
+              }
+            ],
+             "actual": [
+              {
+                "name":"webpack-node-externals",
+                "category":"npm",
+                "version":"1.6.0"
+              }
+            ]
+          }'
+          file_path: ./versions.json
 ```
 `version-alignment-rule` from the `datree` namespace is imported into `datree` which can then be referenced in a step in any job you require.
 
@@ -33,7 +60,7 @@ Enter either your datree api key or use the CircleCI UI to add your token under 
 
 - ### payload
 
-A valid json stracture*:
+A valid json stracture:
 ```json
 "expected":[
   {
@@ -50,4 +77,6 @@ A valid json stracture*:
   },
 ]
 ```
-\*Path to a json file is also supported
+
+- ### file_path
+An optinal pramater for a json file path instead of the 'payload' parameter
