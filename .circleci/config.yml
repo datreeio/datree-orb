@@ -18,4 +18,9 @@ workflows:
           requires: 
             - extract-versions
           context: datree-api-key
-          payload: '{"expected": [{"name":"webpack-node-externals","category":"npm","version":"1.7.2"}],"actual": [{"name":"webpack-node-externals","category":"npm","version":"1.7.2"}]}'
+          payload: '{
+            "expected": 
+              [{"name":"webpack-node-externals","category":"npm","version":"1.7.2"}],
+            "actual":
+              [{"name":"webpack-node-externals","category":"npm","version":"1.7.2"}]
+          }'
