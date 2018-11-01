@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  datree: datree/compare-versions@dev:0.0.6
+  datree: datree/version-alignment-rule@0.0.1
 
 jobs:
   extract-versions:
@@ -14,7 +14,7 @@ workflows:
   build_and_test:
     jobs:
       - extract-versions
-      - datree/compare-versions:
+      - datree/version-alignment-rule:
           requires: 
             - extract-versions
           context: datree-api-key
