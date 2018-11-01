@@ -7,9 +7,9 @@ This [orb](https://github.com/CircleCI-Public/config-preview-sdk/blob/master/doc
 ## Use Cases
 
 Developers would like to align and control versions of packages across different projects and teams:
-* Version alignment of UI packages - Avoid discrepancy between different versions of the same package of UI components across different projects.
-* Version alignment of Internal packages - Avoid breaking changes between different versions of the same internal package across different projects.
-* Open source - Create a blacklist of risky versions of specific open source packages.
+* :eyeglasses: Version alignment of UI packages - Avoid discrepancy between different versions of the same package of UI components across different projects.
+* :lock: Version alignment of Internal packages - Avoid breaking changes between different versions of the same internal package across different projects.
+* :no_entry_sign: Open source - Create a blacklist of risky versions of specific open source packages.
 
 
 ## Usage
