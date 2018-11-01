@@ -1,8 +1,8 @@
 version: 2.1
 orbs:
-  datree: datree/compare-versions@dev:0.0.1
+  datree: datree/version-alignment-rule@dev:0.0.6
 
 workflows:
   build_and_test:
     jobs:
-      - datree/run-version-compare
+      - datree/version-alignment-rule

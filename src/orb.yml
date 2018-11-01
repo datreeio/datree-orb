@@ -7,9 +7,9 @@ executors:
     shell: /bin/bash
 
 jobs:
-  compare-versions:
+  version-alignment-rule:
     executor: default
-    description: 'this is compare-versions descriptions'
+    description: Control version alignment of packages across multiple repositories.
     parameters: 
       API_KEY:
         description: Enter either your datree api key or use the CircleCI UI to add your token under the 'DATREE_API_KEY' env var
