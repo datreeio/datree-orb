@@ -1,5 +1,7 @@
 version: 2.1
 
+description: Control version alignment of packages across multiple repositories.
+
 executors:
   default:
     docker: 
