@@ -1,20 +1,92 @@
 version: 2.1
 
-description: Control version alignment of packages across multiple repositories.
+description: |
+  Use Datree's Policy Enforcement from within your build.
+  The orb includes several commands you can run during your build to enforce your policy.
+  For more information check here - https://docs.datree.io/docs/datree-and-circleci
 
-executors:
-  default:
-    docker: 
-      - image: circleci/node:8
-    shell: /bin/bash
+commands:
+  branch-name-convention:
+    description: |
+      Validate that the branch name is linked to your issue tracker.
+      This orb will fail your build in case the branch name doesn't contain the pattern expected by your issue tracker.
+    parameters:
+      issue_tracker:
+        description: Name of you issue tracker. Currently Jira and Pivotal are supported.
+        default: 'jira'
+        type: enum
+        enum: ['jira', 'pivotal']
+    steps:
+      - run:
+          name: datree branch-name-convention policy
+          command: |
+            res=$(curl -X POST \
+              https://gateway.datree.io/v1/policy/orb/branchname \
+              -H 'Content-Type: application/json' \
+              -d '{ "issue_tracker": "<< parameters.issue_tracker >>", "branch_name": "'"$CIRCLE_BRANCH"'"}') && \
+            prop="passed" && \
+            # parse json and extract value
+            # credit to cjus - https://gist.github.com/cjus/1047794
+            passed=`echo $res | sed 's/\\\\\//\//g' | sed 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/\"\:\"/\|/g' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w $prop | cut -d":" -f2| sed -e 's/^ *//g' -e 's/ *$//g'` && \
+            if [ "$passed" = true ]
+            then
+              echo "Success - branch name mentions issue tracker format"
+            else
+              echo "Failed - branch name doesn't mention issue tracker"
+              exit 1
+            fi
 
-jobs:
-  version-alignment-rule:
-    executor: default
+  pull-request-title-convention:
+    description: |
+      Validate that the pull request title is linked to your issue tracker.
+      This orb will fail your build in case the pull request title doesn't contain the pattern expected by your issue tracker.
+      In case the build doesn't run on a pull request, the orb will automatically continue.
+      For a 'how-to' guide on generating a Github Token see here - https://docs.datree.io/docs/generate-github-token.
+    parameters:
+      issue_tracker:
+        description: |
+          Name of you issue tracker - currently only Jira is supported. 
+          When using Pivotal, pull requests will connect automatically if the branch was linked.
+        default: 'jira'
+        type: enum
+        enum: ['jira']
+      token:
+        description: Enter either your github token or use the CircleCI UI to add your token under the 'GITHUB_TOKEN' environment variable
+        default: $GITHUB_TOKEN
+        type: string
+    steps:
+      - run:
+          name: datree pull-request-title-convention policy
+          command: |
+            # if no pull request is available exit early
+            if [ -z "$CIRCLE_PULL_REQUEST" ]
+            then
+              echo "No pull request available"
+              exit 0
+            fi && \
+            # parse pull request number from url
+            PR_NUMBER=${CIRCLE_PULL_REQUEST##*/} && \
+            res=$(curl -X POST \
+              https://gateway.datree.io/v1/policy/orb/pullrequesttitle \
+              -H 'Content-Type: application/json' \
+              -d '{ "issue_tracker": "<< parameters.issue_tracker >>", "token": "<< parameters.token >>", "repositoryUrl": "'"$CIRCLE_REPOSITORY_URL"'", "pullRequestNumber": "'"$PR_NUMBER"'" }') && \
+            prop="passed" && \
+            # parse json and extract value
+            # credit to cjus - https://gist.github.com/cjus/1047794
+            passed=`echo $res | sed 's/\\\\\//\//g' | sed 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/\"\:\"/\|/g' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w $prop | cut -d":" -f2| sed -e 's/^ *//g' -e 's/ *$//g'` && \
+            if [ "$passed" = true ]
+            then
+              echo "Success - pull request title mentions issue tracker format"
+            else
+              echo "Failed - pull request title doesn't mention issue tracker"
+              exit 1
+            fi
+
+  version-alignment:
     description: Control version alignment of packages across multiple repositories.
-    parameters: 
+    parameters:
       API_KEY:
-        description: Enter either your datree api key or use the CircleCI UI to add your token under the 'DATREE_API_KEY' env var
+        description: Enter either your Datree api key or use the CircleCI UI to add your token under the 'DATREE_API_KEY' env var
         default: $DATREE_API_KEY
         type: string
       file_path:
@@ -27,7 +99,7 @@ jobs:
         type: string
     steps:
       - checkout
-      - run: 
+      - run:
           name: datree version-compare policy
           command: |
             npm install @datreeio/version-compare && \
@@ -36,3 +108,94 @@ jobs:
             -f '<< parameters.file_path >>' \
             -p '<< parameters.payload >>' \
             -u $CIRCLE_PULL_REQUEST
+
+examples:
+  branch-name-convention:
+    description: |
+      Example of using Datree's branch name convention rule.
+      The `issue_tracker` parameter is optional (defaults to Jira)
+    usage:
+      orbs:
+        datree: datree/policy@latest # we advise to lock the version before pushing to production
+
+      description: A circle-ci job to enforce Datree's branch name convention rule
+
+      jobs:
+        my_job:
+          docker:
+            - image: circleci/node:10
+          steps:
+            - datree/branch-name-convention:
+                issue_tracker: jira
+
+      version: 2.1
+      workflows:
+        main:
+          jobs:
+            - my_job
+
+  pull-request-title-convention:
+    description: |
+      Example of using Datree's pull request title convention rule.
+      The `issue_tracker` parameter is optional (defaults to Jira).
+      The `token` parameter is required. It is possible to pass it using `GITHUB_TOKEN` environment variable.
+    usage:
+      orbs:
+        datree: datree/policy@latest # we advise to lock the version before pushing to production
+
+      description: A circle-ci job to enforce Datree's pull request title convention rule
+
+      jobs:
+        my_job:
+          docker:
+            - image: circleci/node:10
+          steps:
+            - datree/branch-name-convention:
+                issue_tracker: jira
+
+      version: 2.1
+      workflows:
+        main:
+          jobs:
+            - my_job:
+                context: github-token-context # required in order to use the environment variable
+
+  version-alignment:
+    description: |
+      Example of using Datree's version alignment rule.
+      The `payload` parameter is required. In this example we run a fake job that extracts the actual installed versions from within the build.
+      The `DATREE_API_KEY` parameter is required. It is possible to pass it using an environment variable of the same name.
+    usage:
+      orbs:
+        datree: datree/policy@latest # we advise to lock the version before pushing to production
+
+      description: A circle-ci to enforce uses Datree's version alignment rule
+
+      jobs:
+        extract-versions:
+          docker:
+            - image: circleci/circleci-cli:0.1.2709
+          steps:
+            - run: echo "running version extraction script"
+            # this is a mock demo - running a script to extract the package versions that were installed during the build
+        my_job:
+          docker:
+            - image: circleci/node:10
+          steps:
+            - datree/version-alignment
+
+      version: 2.1
+      workflows:
+        main:
+          jobs:
+            - extract-versions
+            - my_job:
+                requires:
+                  - extract-versions
+                context: datree-api-context # required in order to use the environment variable
+                payload: '{
+                  "expected": 
+                    [{"name":"webpack-node-externals","category":"npm","version":"1.7.2"}],
+                  "actual":
+                    [{"name":"webpack-node-externals","category":"npm","version":"1.7.2"}]
+                }' # In a real life scenario this is passed from the extract-versions job.
