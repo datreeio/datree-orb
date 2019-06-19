@@ -33,6 +33,7 @@ commands:
               echo "Success - branch name mentions issue tracker format"
             else
               echo "Failed - branch name doesn't mention issue tracker"
+              echo "In order to fix go to - https://docs.datree.io/docs/rename-a-local-and-remote-branch"
               exit 1
             fi
 
@@ -79,6 +80,7 @@ commands:
               echo "Success - pull request title mentions issue tracker format"
             else
               echo "Failed - pull request title doesn't mention issue tracker"
+              echo "In order to fix go to - https://docs.datree.io/docs/link-pull-request-to-a-jira-ticket#how-to-fix"
               exit 1
             fi
 
@@ -116,7 +118,7 @@ examples:
       The `issue_tracker` parameter is optional (defaults to Jira)
     usage:
       orbs:
-        datree: datree/policy@latest # we advise to lock the version before pushing to production
+        datree: datree/policy@volatile # we advise to lock the version before pushing to production
 
       description: A circle-ci job to enforce Datree's branch name convention rule
 
@@ -141,7 +143,7 @@ examples:
       The `token` parameter is required. It is possible to pass it using `GITHUB_TOKEN` environment variable.
     usage:
       orbs:
-        datree: datree/policy@latest # we advise to lock the version before pushing to production
+        datree: datree/policy@volatile # we advise to lock the version before pushing to production
 
       description: A circle-ci job to enforce Datree's pull request title convention rule
 
@@ -150,7 +152,7 @@ examples:
           docker:
             - image: circleci/node:10
           steps:
-            - datree/branch-name-convention:
+            - datree/pull-request-title-convention:
                 issue_tracker: jira
 
       version: 2.1
@@ -167,7 +169,7 @@ examples:
       The `DATREE_API_KEY` parameter is required. It is possible to pass it using an environment variable of the same name.
     usage:
       orbs:
-        datree: datree/policy@latest # we advise to lock the version before pushing to production
+        datree: datree/policy@volatile # we advise to lock the version before pushing to production
 
       description: A circle-ci to enforce uses Datree's version alignment rule
 
