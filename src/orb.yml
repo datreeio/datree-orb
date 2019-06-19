@@ -67,10 +67,11 @@ commands:
             fi && \
             # parse pull request number from url
             PR_NUMBER=${CIRCLE_PULL_REQUEST##*/} && \
+            REPOSITORY_URL=$(echo $CIRCLE_PULL_REQUEST | sed 's|\(.*\)/.*|\1|' | sed 's|\(.*\)/.*|\1|')
             res=$(curl -X POST \
               https://gateway.datree.io/v1/policy/orb/pullrequesttitle \
               -H 'Content-Type: application/json' \
-              -d '{ "issue_tracker": "<< parameters.issue_tracker >>", "token": "<< parameters.token >>", "repositoryUrl": "'"$CIRCLE_REPOSITORY_URL"'", "pullRequestNumber": "'"$PR_NUMBER"'" }') && \
+              -d '{ "issue_tracker": "<< parameters.issue_tracker >>", "token": "<< parameters.token >>", "repositoryUrl": "'"$REPOSITORY_URL"'", "pullRequestNumber": "'"$PR_NUMBER"'" }') && \
             prop="passed" && \
             # parse json and extract value
             # credit to cjus - https://gist.github.com/cjus/1047794
