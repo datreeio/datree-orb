@@ -5,6 +5,10 @@ description: |
   The orb includes several commands you can run during your build to enforce your policy.
   For more information check here - https://docs.datree.io/docs/datree-and-circleci
 
+display:
+  source_url: https://github.com/datreeio/datree-orb
+  home_url: https://datree.io
+
 commands:
   branch-name-convention:
     description: |
